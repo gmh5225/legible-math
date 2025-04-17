@@ -86,21 +86,23 @@ using LegibleMath for LM global;
 
 /*─────────── compile‑time packed constants ──────────*/
 /* (num << 16) | den  — taken from the letter‑product solution letter-product-o4-mini-v2.pdf](file-service://file-SxRBUiP5LHs8LngXUnYyAW) */
-LM constant z = LM.wrap(0x00000001);  //  0 / 1
-LM constant o = LM.wrap(0x00010001);  //  1 / 1
-LM constant n = LM.wrap(0x00010001);  //  1 / 1
-LM constant e = LM.wrap(0x00010001);  //  1 / 1
-LM constant r = LM.wrap(0x00010001);  //  1 / 1
-LM constant t = LM.wrap(0x000a0001);  // 10 / 1
-LM constant w = LM.wrap(0x00010005);  //  1 / 5
-LM constant h = LM.wrap(0x0003000a);  //  3 / 10
-LM constant f = LM.wrap(0x00050009);  //  5 / 9
-LM constant u = LM.wrap(0x00240005);  // 36 / 5
-LM constant s = LM.wrap(0x00070001);  //  7 / 1
-LM constant x = LM.wrap(0x00020015);  //  2 / 21
-LM constant g = LM.wrap(0x0008001b);  //  8 / 27
-LM constant l = LM.wrap(0x000b0001);  // 11 / 1
 LM constant a = LM.wrap(0xfffd0050);  // -3 / 80
+LM constant e = LM.wrap(0x00010001);  //  1 / 1
+LM constant f = LM.wrap(0x00050009);  //  5 / 9
+LM constant g = LM.wrap(0x0008001b);  //  8 / 27
+LM constant h = LM.wrap(0x0003000a);  //  3 / 10
+LM constant i = LM.wrap(0x00090001);  //  9 / 1
+LM constant l = LM.wrap(0x000b0001);  // 11 / 1
+LM constant n = LM.wrap(0x00010001);  //  1 / 1
+LM constant o = LM.wrap(0x00010001);  //  1 / 1
+LM constant r = LM.wrap(0x00010001);  //  1 / 1
+LM constant s = LM.wrap(0x00070001);  //  7 / 1
+LM constant t = LM.wrap(0x000a0001);  // 10 / 1
+LM constant u = LM.wrap(0x00240005);  // 36 / 5
+LM constant v = LM.wrap(0x00010001);  //  1 / 1
+LM constant w = LM.wrap(0x00010005);  //  1 / 5
+LM constant x = LM.wrap(0x00020015);  //  2 / 21
+LM constant z = LM.wrap(0x00000001);  //  0 / 1
 
 /*─────────── tiny demo ───────────*/
 contract SpellDemo {

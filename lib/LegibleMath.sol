@@ -36,8 +36,8 @@ function _encode(int256 _n, int256 _d) pure returns (LM) {
 }
 
 function _reduce(int256 _n, int256 _d) pure returns (LM) {
-    int256 g = _gcd(_n, _d);
-    return _encode(_n / g, _d / g);
+    int256 _g = _gcd(_n, _d);
+    return _encode(_n / _g, _d / _g);
 }
 
 /*─────────── operator overloads ───────────*/
@@ -71,11 +71,11 @@ library LegibleMath {
     struct Fraction { int256 num; int256 den; }
 
     function literally(LM _f) internal pure returns (int256) {
-        (int256 n, int256 d) = _split(_f);
-        if (n % d != 0) revert NotInteger(n, d);
-        int256 v = n / d;
-        if (v < -11 || v > 11) revert OutOfRange(v);
-        return v;
+        (int256 _n, int256 _d) = _split(_f);
+        if (_n % _d != 0) revert NotInteger(_n, _d);
+        int256 val = _n / _d;
+        if (val < -11 || val > 11) revert OutOfRange(val);
+        return val;
     }
 
     function toFraction(LM _f) internal pure returns (int256 num, int256 den) {
@@ -103,10 +103,3 @@ LM constant v = LM.wrap(0x00010001);  //  1 / 1
 LM constant w = LM.wrap(0x00010005);  //  1 / 5
 LM constant x = LM.wrap(0x00020015);  //  2 / 21
 LM constant z = LM.wrap(0x00000001);  //  0 / 1
-
-/*─────────── tiny demo ───────────*/
-contract SpellDemo {
-    function three() external pure returns (int256) {
-        return (o*n*e + t*w*o).literally();      // 3
-    }
-}

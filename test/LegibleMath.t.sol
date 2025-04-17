@@ -16,62 +16,104 @@ contract LegibleMathTest is Test {
     }
 
     function test_spell_zero() public {
-        LM v = z * e * r * o;
-        assertEq(v.literally(), 0);
+        LM res = z * e * r * o;
+        assertEq(res.literally(), 0);
     }
 
     function test_spell_one() public {
-        LM v = o * n * e;
-        assertEq(v.literally(), 1);
+        LM res = o * n * e;
+        assertEq(res.literally(), 1);
     }
 
     function test_spell_two() public {
-        LM v = t * w * o;
-        assertEq(v.literally(), 2);
+        LM res = t * w * o;
+        assertEq(res.literally(), 2);
     }
 
     function test_spell_three() public {
-        LM v = t * h * r * e * e;
-        assertEq(v.literally(), 3);
+        LM res = t * h * r * e * e;
+        assertEq(res.literally(), 3);
     }
 
     function test_spell_four() public {
-        LM v = f * o * u * r;
-        assertEq(v.literally(), 4);
+        LM res = f * o * u * r;
+        assertEq(res.literally(), 4);
     }
 
     function test_spell_five() public {
-        LM v = f * i * v * e;
-        assertEq(v.literally(), 5);
+        LM res = f * i * v * e;
+        assertEq(res.literally(), 5);
     }
 
     function test_spell_six() public {
-        LM v = s * i * x;
-        assertEq(v.literally(), 6);
+        LM res = s * i * x;
+        assertEq(res.literally(), 6);
     }
 
     function test_spell_seven() public {
-        LM v = s * e * v * e * n;
-        assertEq(v.literally(), 7);
+        LM res = s * e * v * e * n;
+        assertEq(res.literally(), 7);
     }
 
     function test_spell_eight() public {
-        LM v = e * i * g * h * t;
-        assertEq(v.literally(), 8);
+        LM res = e * i * g * h * t;
+        assertEq(res.literally(), 8);
     }
 
     function test_spell_nine() public {
-        LM v = n * i * n * e;
-        assertEq(v.literally(), 9);
+        LM res = n * i * n * e;
+        assertEq(res.literally(), 9);
     }
 
     function test_spell_ten() public {
-        LM v = t * e * n;
-        assertEq(v.literally(), 10);
+        LM res = t * e * n;
+        assertEq(res.literally(), 10);
     }
 
     function test_spell_eleven() public {
-        LM v = e * l * e * v * e * n;
-        assertEq(v.literally(), 11);
+        LM res = e * l * e * v * e * n;
+        assertEq(res.literally(), 11);
+    }
+
+    function test_spell_negative_four() public {
+        LM negative = n * e * g * a * t * i * v * e;
+        LM four = f * o * u * r;
+        LM result = negative * four;
+        assertEq(result.literally(), -4, "negative * four should equal -4");
+    }
+
+    function test_spell_one_plus_one_equals_two() public {
+        LM one = o * n * e;
+        LM two = t * w * o;
+        assertEq((one + one).literally(), two.literally());
+    }
+
+    function test_spell_two_times_three_equals_six() public {
+        LM two = t * w * o;
+        LM three = t * h * r * e * e;
+        LM six = s * i * x;
+        assertEq((two * three).literally(), six.literally());
+    }
+
+    function test_spell_ten_minus_one_equals_nine() public {
+        LM ten = t * e * n;
+        LM one = o * n * e;
+        LM nine = n * i * n * e;
+        assertEq((ten - one).literally(), nine.literally());
+    }
+
+    /* OutOfRange Tests for literally() */
+    function test_out_of_range_positive() public {
+        // Create 12/1, which is outside the -11..11 range for literally()
+        LM twelve = LM.wrap(0x000c0001);
+        vm.expectRevert(abi.encodeWithSelector(OutOfRange.selector, 12));
+        twelve.literally();
+    }
+
+    function test_out_of_range_negative() public {
+        // Create -12/1, which is outside the -11..11 range for literally()
+        LM negative_twelve = LM.wrap(0xfff40001); // -12 signed 16-bit is 0xFFF4
+        vm.expectRevert(abi.encodeWithSelector(OutOfRange.selector, -12));
+        negative_twelve.literally();
     }
 }

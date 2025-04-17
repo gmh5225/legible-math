@@ -27,7 +27,12 @@ function _gcd(int256 _x, int256 _y) pure returns (int256) {
 
 function _encode(int256 _n, int256 _d) pure returns (LM) {
     if (_d <= 0 || _d > _LIM || _n < -_LIM || _n > _LIM) revert Overflow();
-    return LM.wrap(uint32(uint16(int16(_n)) << 16 | uint16(uint256(_d))));
+    // pack a 16-bit signed numerator and 16-bit unsigned denominator into 32 bits
+    // ensure shift occurs on a 32-bit value so bits are not truncated
+    uint32 numBits = uint32(uint16(int16(_n)));
+    uint32 denBits = uint32(uint16(uint256(_d)));
+    uint32 packed = (numBits << 16) | denBits;
+    return LM.wrap(packed);
 }
 
 function _reduce(int256 _n, int256 _d) pure returns (LM) {
@@ -73,8 +78,8 @@ library LegibleMath {
         return v;
     }
 
-    function toFraction(LM _f) internal pure returns (Fraction memory fr) {
-        (fr.num, fr.den) = _split(_f);
+    function toFraction(LM _f) internal pure returns (int256 num, int256 den) {
+        (num, den) = _split(_f);
     }
 }
 using LegibleMath for LM global;

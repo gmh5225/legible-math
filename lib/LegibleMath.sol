@@ -1,102 +1,99 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+// SPDX‑License‑Identifier: MIT
+pragma solidity ^0.8.24;
 
-import { console } from "forge-std/console.sol";
+/*───────────────────────────────────────────────────────────────*
+ *  16‑bit signed numerator ⬆️ | 16‑bit unsigned denominator ⬇️   *
+ *  packed into a single uint32  →  type LM is uint32             *
+ *───────────────────────────────────────────────────────────────*/
 
-/// @dev A rational number type and operator overloads for natural letter multiplication
-struct Fraction { int256 num; int256 den; }
-/// @dev Value type for Fraction to enable operator overloading
-type Frac is Fraction;
+type LM is uint32;
+uint32 constant _DEN_MASK = 0xFFFF;
+int256 constant _LIM = 32767;
 
-error ZeroDenominator();
-error NonInteger();
-error OutOfBounds();
+/* ───────── errors ───────── */
+error NotInteger(int256 num, int256 den);
+error OutOfRange(int256 value);
+error Overflow();
 
-// Global operator overloads
-function add(Frac x, Frac y) pure returns (Frac) {
-    Fraction memory A = Frac.unwrap(x);
-    Fraction memory B = Frac.unwrap(y);
-    return Frac.wrap(Fraction(A.num * B.den + B.num * A.den, A.den * B.den));
-}
-function sub(Frac x, Frac y) pure returns (Frac) {
-    Fraction memory A = Frac.unwrap(x);
-    Fraction memory B = Frac.unwrap(y);
-    return Frac.wrap(Fraction(A.num * B.den - B.num * A.den, A.den * B.den));
-}
-function mul(Frac x, Frac y) pure returns (Frac) {
-    Fraction memory A = Frac.unwrap(x);
-    Fraction memory B = Frac.unwrap(y);
-    return Frac.wrap(Fraction(A.num * B.num, A.den * B.den));
-}
-function div(Frac x, Frac y) pure returns (Frac) {
-    Fraction memory A = Frac.unwrap(x);
-    Fraction memory B = Frac.unwrap(y);
-    if (B.num == 0) revert ZeroDenominator();
-    return Frac.wrap(Fraction(A.num * B.den, A.den * B.num));
-}
-function neg(Frac x) pure returns (Frac) {
-    Fraction memory A = Frac.unwrap(x);
-    return Frac.wrap(Fraction(-A.num, A.den));
+/* ───────── helpers ───────── */
+function _split(LM f) pure returns (int256 num, int256 den) {
+    uint32 raw = LM.unwrap(f);
+    den = int256(uint16(raw & _DEN_MASK));
+    num = int256(int16(uint16(raw >> 16)));      // sign‑extend
 }
 
-using { add as +, sub as -, mul as *, div as /, neg as unary- } for Frac global;
+function _gcd(int256 a, int256 b) pure returns (int256) {
+    while (b != 0) { (a, b) = (b, a % b); }
+    return a >= 0 ? a : -a;
+}
 
-/// @title LegibleMath
-/// @notice Spell –11…11 by direct letter constants and arithmetic
+function _encode(int256 n, int256 d) pure returns (LM) {
+    if (n < -_LIM || n > _LIM || d <= 0 || d > _LIM) revert Overflow();
+    return LM.wrap(uint32(uint16(int16(n)) << 16 | uint16(uint256(d))));
+}
+
+function _reduce(int256 n, int256 d) pure returns (LM) {
+    int256 g = _gcd(n, d);
+    return _encode(n / g, d / g);
+}
+
+/* ───────── operator overloads ───────── */
+function _plus (LM a, LM b) pure returns (LM) {
+    (int256 na,int256 da) = _split(a);
+    (int256 nb,int256 db) = _split(b);
+    return _reduce(na*db + nb*da, da*db);
+}
+function _minus(LM a, LM b) pure returns (LM) {
+    (int256 na,int256 da) = _split(a);
+    (int256 nb,int256 db) = _split(b);
+    return _reduce(na*db - nb*da, da*db);
+}
+function _times(LM a, LM b) pure returns (LM) {
+    (int256 na,int256 da) = _split(a);
+    (int256 nb,int256 db) = _split(b);
+    return _reduce(na*nb, da*db);
+}
+function _over (LM a, LM b) pure returns (LM) {
+    (int256 na,int256 da) = _split(a);
+    (int256 nb,int256 db) = _split(b);
+    if (nb == 0) revert();
+    return _reduce(na*db, da*nb);
+}
+
+/* make the symbols global */
+using {_plus as +, _minus as -, _times as *, _over as /} for LM global;
+
+/* ───────── LegibleMath helpers ───────── */
 library LegibleMath {
-    // Letter constants as Fractions wrapped in Frac
-    Frac public constant z = Frac.wrap(Fraction({ num: 0, den: 1 }));    // zero
-    Frac public constant e = Frac.wrap(Fraction({ num: 1, den: 1 }));
-    Frac public constant r = Frac.wrap(Fraction({ num: 1, den: 1 }));
-    Frac public constant o = Frac.wrap(Fraction({ num: 1, den: 1 }));
-    Frac public constant n = Frac.wrap(Fraction({ num: 1, den: 1 }));
-    Frac public constant t = Frac.wrap(Fraction({ num: 10, den: 1 }));
-    Frac public constant w = Frac.wrap(Fraction({ num: 1, den: 5 }));
-    Frac public constant h = Frac.wrap(Fraction({ num: 3, den: 10 }));
-    Frac public constant f = Frac.wrap(Fraction({ num: 5, den: 9 }));
-    Frac public constant u = Frac.wrap(Fraction({ num: 36, den: 5 }));
-    Frac public constant v = Frac.wrap(Fraction({ num: 1, den: 1 }));
-    Frac public constant i = Frac.wrap(Fraction({ num: 9, den: 1 }));
-    Frac public constant s = Frac.wrap(Fraction({ num: 7, den: 1 }));
-    Frac public constant x = Frac.wrap(Fraction({ num: 2, den: 21 }));
-    Frac public constant g = Frac.wrap(Fraction({ num: 8, den: 27 }));
-    Frac public constant l = Frac.wrap(Fraction({ num: 11, den: 1 }));
-    Frac public constant a = Frac.wrap(Fraction({ num: -3, den: 80 }));
+    function literally(LM f) internal pure returns (int256) {
+        (int256 n,int256 d) = _split(f);
+        if (n % d != 0) revert NotInteger(n, d);
+        int256 v = n / d;
+        if (v < -11 || v > 11) revert OutOfRange(v);
+        return v;
+    }
 
-    /// @notice Decode Frac to integer with bound check
-    function decode(Frac word) internal pure returns (int256) {
-        Fraction memory W = Frac.unwrap(word);
-        if (W.den == 0 || W.num % W.den != 0) revert NonInteger();
-        int256 val = W.num / W.den;
-        if (val < -11 || val > 11) revert OutOfBounds();
-        return val;
+    struct Fraction { int256 num; int256 den; }
+    function toFraction(LM f) internal pure returns (Fraction memory fr) {
+        (fr.num, fr.den) = _split(f);
     }
 }
+using LegibleMath for LM global;
 
-
-// ─── Example ─────────────────────────────────
-import { console } from "forge-std/console.sol";
-// import letters and decode:
-// import { z, e, r, o, n, t, w, h, f, u, v, i, s, x, g, l, a } from "./LegibleMath.sol";
-// using the overloaded operators and decode directly:
-
-contract Demo {
-    function demo() external {
-        // 1 + 2 = 3
-        Frac one = o * n * e;
-        Frac two = t * w * o;
-        console.logInt(LegibleMath.decode(one + two)); // 3
-
-        // (3 * 5) - (7 + 4) = 4
-        Frac three = t * h * r * e * e;
-        Frac five  = f * i * v * e;
-        Frac seven = s * e * v * e * n;
-        Frac four  = f * o * u * r;
-        console.logInt(LegibleMath.decode(three * five - (seven + four))); // 4
-
-        // negative eleven = -11
-        Frac negOne = n * e * g * a * t * i * v * e;
-        Frac eleven = e * l * e * v * e * n;
-        console.logInt(LegibleMath.decode(negOne * eleven)); // -11
-    }
-}
+/*────────────────── pre‑packed constants (compile‑time literals) ──────────*/
+/* Values taken from the letter‑product solution. letter-product-o4-mini-v2.pdf](file-service://file-SxRBUiP5LHs8LngXUnYyAW) */
+LM constant z = LM.wrap(0x00000001);  // 0 / 1
+LM constant o = LM.wrap(0x00010001);  // 1 / 1
+LM constant n = LM.wrap(0x00010001);  // 1 / 1
+LM constant e = LM.wrap(0x00010001);  // 1 / 1
+LM constant r = LM.wrap(0x00010001);  // 1 / 1
+LM constant t = LM.wrap(0x000a0001);  // 10 / 1
+LM constant w = LM.wrap(0x00010005);  // 1 / 5
+LM constant h = LM.wrap(0x0003000a);  // 3 / 10
+LM constant f = LM.wrap(0x00050009);  // 5 / 9
+LM constant u = LM.wrap(0x00240005);  // 36 / 5
+LM constant s = LM.wrap(0x00070001);  // 7 / 1
+LM constant x = LM.wrap(0x00020015);  // 2 / 21
+LM constant g = LM.wrap(0x0008001b);  // 8 / 27
+LM constant l = LM.wrap(0x000b0001);  // 11 / 1
+LM constant a = LM.wrap(0xfffd0050);  // -3 / 80

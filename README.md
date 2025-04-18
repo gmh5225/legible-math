@@ -1,66 +1,55 @@
-## Foundry
+# LegibleMath 📚
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+_Safer than SafeMath. Goes up to 11!_
 
-Foundry consists of:
+LegibleMath is a Solidity library providing readable arithmetic with compile-time constants for the letters you need to spell numbers.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Features
 
-## Documentation
+- **Fun numbers:** As easy as `o*n*e`, `t*w*o`, `t*h*r*e*e`.
+- **Robust math:** Just type your expression like `t*w*o + s*e*v*e*n`.
+- **Easy conversion:** Use `.literally()` to convert words into an integer.
+- **Negative numbers**: Type `n*e*g*a*t*i*v*e * f*i*v*e` to get -5.
+- **Limitless expression**: You can do any sort of math in the [-11, 11] range.
+- **Operator overloading:** Use `+`, `-`, `*`, and `/` for natural expressions.
+- **Safety**: All operations revert safely; fractions are always reduced and never overflow.
 
-https://book.getfoundry.sh/
+## Getting Started
 
-## Usage
+### 1. Installation
 
-### Build
+Copy `lib/LegibleMath.sol` to your project.
 
-```shell
-$ forge build
+### 2. Recommended Import
+
+To easily use all the letter constants and error types, **import everything:**
+
+```solidity
+import {
+  LM, z, o, n, e, r, t, w, h, f, u, s, x, g, l, a, i, v,
+  NotInteger, OutOfRange, Overflow
+} from "../lib/LegibleMath.sol";
 ```
 
-### Test
+### 3. Example: Spelling a Number
 
-```shell
-$ forge test
+```solidity
+function answer() external pure returns (int256) {
+    LM result = t*w*o + t*h*r*e*e;
+    return result.literally(); // returns 5
+}
 ```
 
-### Format
+### 4. Literal Safety
 
-```shell
-$ forge fmt
-```
+- To **retrieve the integer** result, use `.literally()`.  
+- If the fraction isn’t an integer: `revert NotInteger(num, den);`
+- If the value is not in `-11..11`: `revert OutOfRange(value);`
+- If an overflow or invalid denominator: `revert Overflow();`
 
-### Gas Snapshots
+### 5. All Supported Letters
 
-```shell
-$ forge snapshot
-```
+The constants available are:
+- `a, e, f, g, h, i, l, n, o, r, s, t, u, v, w, x, z`
 
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Read the [whitepaper](docs/whitepaper.pdf) to learn how their values were derived.

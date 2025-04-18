@@ -4,8 +4,27 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import {
-    LM, z, o, n, e, r, t, w, h, f, u, s, x, g, l, a, i, v,
-    NotInteger, OutOfRange, Overflow
+    LM,
+    z,
+    o,
+    n,
+    e,
+    r,
+    t,
+    w,
+    h,
+    f,
+    u,
+    s,
+    x,
+    g,
+    l,
+    a,
+    i,
+    v,
+    NotInteger,
+    OutOfRange,
+    Overflow
 } from "../lib/LegibleMath.sol";
 
 contract LegibleMathTest is Test {

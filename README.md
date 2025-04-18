@@ -26,7 +26,8 @@ To easily use all the letter constants and error types, **import everything:**
 
 ```solidity
 import {
-  LM, z, o, n, e, r, t, w, h, f, u, s, x, g, l, a, i, v,
+  LM, w, h, i, z, t, r, o, n, f, l, u, x, g, a, s, e, v,
+
   NotInteger, OutOfRange, Overflow
 } from "../lib/LegibleMath.sol";
 ```

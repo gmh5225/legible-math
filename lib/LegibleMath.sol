@@ -85,7 +85,7 @@ library LegibleMath {
 using LegibleMath for LM global;
 
 /*─────────── compile‑time packed constants ──────────*/
-/* (num << 16) | den  — taken from the letter‑product solution letter-product-o4-mini-v2.pdf](file-service://file-SxRBUiP5LHs8LngXUnYyAW) */
+/* (num << 16) | den */
 LM constant a = LM.wrap(0xfffd0050);  // -3 / 80
 LM constant e = LM.wrap(0x00010001);  //  1 / 1
 LM constant f = LM.wrap(0x00050009);  //  5 / 9

@@ -1,250 +1,215 @@
-\documentclass[12pt]{article}
-\usepackage[a4paper]{geometry}
+\documentclass[12pt,a4paper]{article}
+\usepackage[]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
 \theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{problem}{Problem}
+
+\title{\textbf{LegibleMath: Phonetically-Inspired Arithmetic System for Smart Contracts}}
+\author{banteg \\ \textit{Independent Researcher}}
+\date{April 1, 2025}
+
 \begin{document}
 
-\title{Solution of the Legible Math Problem}
-\author{banteg}
-\date{April 1, 2025}
 \maketitle
 
-\section*{System of Equations}
-\begin{align*}
- z\,e\,r\,o &= 0,\\
- o\,n\,e &= 1,\\
- t\,w\,o &= 2,\\
- t\,h\,r\,e\,e &= 3,\\
- f\,o\,u\,r &= 4,\\
- f\,i\,v\,e &= 5,\\
- s\,i\,x &= 6,\\
- s\,e\,v\,e\,n &= 7,\\
- e\,i\,g\,h\,t &= 8,\\
- n\,i\,n\,e &= 9,\\
- t\,e\,n &= 10,\\
- e\,l\,e\,v\,e\,n &= 11,\\
- n\,e\,g\,a\,t\,i\,v\,e &= -1.
-\end{align*}
+\begin{abstract}
+\noindent The increasing complexity of smart contracts necessitates robust and verifiable arithmetic operations. Current solutions, while functional, often lack intuitive readability, potentially hindering auditability and increasing the surface area for semantic errors. This paper introduces LegibleMath, a novel Solidity library employing a system where numerical values are represented by the multiplicative product of letters comprising their English spelling. We present the formal derivation of a consistent set of real-valued constants for the letters required to represent integers in the range [-11, 11]. We provide the general solution, demonstrate a concrete instantiation, and rigorously prove the inherent limitation of the system, specifically demonstrating the impossibility of extending it to represent the number twelve while maintaining consistency. This work establishes the mathematical foundation for LegibleMath, highlighting its unique approach to enhancing code clarity, albeit within a constrained numerical domain.
+\end{abstract}
 
-\bigskip
-\noindent\textbf{1. From the first equation:}
-\[
- z\,e\,r\,o = 0
-\]
-\[
- \text{Since }e,r,o\neq 0,\text{ we conclude }
- z = 0.
-\]
+\section{Introduction}
 
-\bigskip
-\noindent\textbf{2. Introduce free parameters:}
-\[
- o,\;e,\;r,\;v
-\]
-be four arbitrary nonzero real numbers.
+The evolution of blockchain technology and decentralized applications has placed significant emphasis on the security and correctness of smart contracts \cite{solidity_docs}. Arithmetic operations are fundamental to most contract logic, and errors in these operations can lead to catastrophic financial losses. Libraries like SafeMath \cite{safemath} were developed to mitigate integer overflow and underflow vulnerabilities, representing a crucial step forward in contract safety.
 
-\bigskip
-\noindent\textbf{3. From the equation}
-\[
- o\,n\,e = 1
- \quad\Longrightarrow\quad
- n = \frac{1}{oe}.
-\]
+However, safety alone does not guarantee clarity. Complex arithmetic expressions, even when safe, can be difficult to parse and verify during code reviews and audits. LegibleMath proposes a radical alternative aimed at enhancing the \emph{readability} of numerical expressions within Solidity code. The core concept is to represent integer values through the multiplicative interaction of constants associated with the letters forming their standard English spellings (e.g., \texttt{t*w*o} evaluates to 2). This approach leverages human language familiarity to potentially make numerical assignments and simple calculations more intuitive.
 
-\bigskip
-\noindent\textbf{4. From the equation}
-\[
- t\,e\,n = 10
- \quad\Longrightarrow\quad
- t = 10\,o.
-\]
+This paper addresses the fundamental mathematical challenge underpinning LegibleMath: determining a consistent set of values for the required letter constants.
 
-\bigskip
-\noindent\textbf{5. From the equation}
-\[
- (10o)\,w\,o = 2
- \quad\Longrightarrow\quad
- w = \frac{1}{5\,o^2}.
-\]
+\begin{definition}[LegibleMath Constraint]
+Let $L$ be the set of letters appearing in the English spellings of integers from zero to eleven, plus the word \emph{negative}. We seek a mapping $\phi: L \to \mathbb{R} \setminus \{0\}$ (assigning a non-zero real number to each letter) such that for each target word $W = l_1 l_2 \dots l_k$ representing an integer $v$, the product $\prod_{i=1}^{k} \phi(l_i) = v$. The constant for the letter \emph{z} is permitted to be zero.
+\end{definition}
 
-\bigskip
-\noindent\textbf{6. From the equation}
-\[
- (10o)\,h\,r\,e^2 = 3
- \quad\Longrightarrow\quad
- h = \frac{3}{10\,o\,r\,e^2}.
-\]
+The primary objectives of this work are:
+\begin{enumerate}
+    \item To formulate the system of equations defined by the LegibleMath constraints for the integers 0 through 11 and the multiplier -1 (\emph{negative}).
+    \item To derive the general solution for the letter constants satisfying this system.
+    \item To provide a concrete numerical example of these constants.
+    \item To analyze the limitations of this system, specifically proving its inability to consistently represent the number twelve.
+\end{enumerate}
 
-\bigskip
-\noindent\textbf{7. From the equation}
-\[
- \Bigl(\frac{1}{oe}\Bigr)\,i\,\Bigl(\frac{1}{oe}\Bigr)\,e = 9
- \quad\Longrightarrow\quad
- i = 9\,o^2e.
-\]
+The structure of this paper follows these objectives. Section \ref{sec:formulation} presents the system of equations. Section \ref{sec:derivation} details the algebraic derivation of the constants. Section \ref{sec:results} summarizes the general solution and provides a specific instance. Section \ref{sec:analysis} discusses the system's boundaries, including the formal proof regarding the number twelve. Section \ref{sec:conclusion} concludes the findings.
 
-\bigskip
-\noindent\textbf{8. From the equation}
-\[
- f\,(9o^2e)\,v\,e = 5
- \quad\Longrightarrow\quad
- f = \frac{5}{9\,o^2\,e^2\,v}.
-\]
+\section{Problem Formulation}
+\label{sec:formulation}
 
-\bigskip
-\noindent\textbf{9. From the equation}
-\[
- f\,o\,u\,r = 4
- \quad\Longrightarrow\quad
- u = \frac{4}{f\,o\,r}
- = \frac{36\,o\,e^2\,v}{5\,r}.
-\]
+The LegibleMath concept translates directly into a system of non-linear algebraic equations. We require the product of the letter constants corresponding to the spelling of each number (and \emph{negative}) to equal its numerical value. This yields the following system:
 
-\bigskip
-\noindent\textbf{10. From the equation}
-\[
- s\,e^2\,v\,n = 7
- \quad\Longrightarrow\quad
- s = \frac{7\,o}{e\,v}.
-\]
+\begin{problem}[LegibleMath System]
+Find real values for the variables \\$\{a, e, f, g, h, i, l, n, o, r, s, t, u, v, w, x, z\}$ satisfying:
+\begin{align}
+ z \cdot e \cdot r \cdot o &= 0 \label{eq:zero}\\
+ o \cdot n \cdot e &= 1 \label{eq:one}\\
+ t \cdot w \cdot o &= 2 \label{eq:two}\\
+ t \cdot h \cdot r \cdot e \cdot e &= 3 \label{eq:three}\\
+ f \cdot o \cdot u \cdot r &= 4 \label{eq:four}\\
+ f \cdot i \cdot v \cdot e &= 5 \label{eq:five}\\
+ s \cdot i \cdot x &= 6 \label{eq:six}\\
+ s \cdot e \cdot v \cdot e \cdot n &= 7 \label{eq:seven}\\
+ e \cdot i \cdot g \cdot h \cdot t &= 8 \label{eq:eight}\\
+ n \cdot i \cdot n \cdot e &= 9 \label{eq:nine}\\
+ t \cdot e \cdot n &= 10 \label{eq:ten}\\
+ e \cdot l \cdot e \cdot v \cdot e \cdot n &= 11 \label{eq:eleven}\\
+ n \cdot e \cdot g \cdot a \cdot t \cdot i \cdot v \cdot e &= -1 \label{eq:negative}
+\end{align}
+\end{problem}
+\noindent We assume, based on the non-zero requirements for most equations, that all variables except potentially $z$ must be non-zero.
 
-\bigskip
-\noindent\textbf{11. From the equation}
-\[
- \Bigl(\frac{7o}{e\,v}\Bigr)\,(9o^2e)\,x = 6
- \quad\Longrightarrow\quad
- x = \frac{2\,v}{21\,o^3}.
-\]
+\section{Solution Derivation}
+\label{sec:derivation}
 
-\bigskip
-\noindent\textbf{12. From the equation}
-\[
- e\,(9o^2e)\,g\,\Bigl(\frac{3}{10\,o\,r\,e^2}\Bigr)\,(10o) = 8
- \quad\Longrightarrow\quad
- g = \frac{8\,r}{27\,o^2}.
-\]
+We solve the system presented in Problem 1 step-by-step.
 
-\bigskip
-\noindent\textbf{13. From the equation}
-\[
- e^3\,l\,v\,n = 11
- \quad\Longrightarrow\quad
- l = \frac{11\,o}{e^2\,v}.
-\]
+\subsection{Determining the Value of z}
+From equation \eqref{eq:zero}, $z \cdot e \cdot r \cdot o = 0$. From equation \eqref{eq:one}, $o \cdot n \cdot e = 1$, which implies $o \neq 0$ and $e \neq 0$. If we assume $r \neq 0$ (required for equation \eqref{eq:three} or \eqref{eq:four} to be non-zero), then the only possibility is:
+\[ z = 0 \]
 
-\bigskip
-\noindent\textbf{14. From the equation}
-\[
- \Bigl(\frac{1}{oe}\Bigr)\,e^2\,\Bigl(\frac{8r}{27\,o^2}\Bigr)\,a\,(10o)\,(9o^2e)\,v = -1
- \quad\Longrightarrow\quad
- a = -\frac{3}{80\,e^2\,r\,v}.
-\]
+\subsection{Establishing Dependencies and Free Parameters}
+The system is underdetermined, containing 13 equations and 17 variables (excluding $z$). We select a set of variables as free parameters, from which the others can be derived. A convenient choice, based on their appearance in early equations, is $\{o, e, r, v\}$. We assume these parameters are non-zero real numbers.
 
-\bigskip
-\section*{General Solution Summary}
-\[
-\begin{aligned}
- z &= 0, 
- & o,e,r,v &\text{ free parameters},\\
- n &= \frac{1}{oe}, 
- & t &= 10\,o, 
- & w &= \frac{1}{5\,o^2}, 
- & h &= \frac{3}{10\,o\,r\,e^2},\\
- i &= 9\,o^2e, 
- & f &= \frac{5}{9\,o^2\,e^2\,v}, 
- & u &= \frac{36\,o\,e^2\,v}{5\,r}, 
- & s &= \frac{7\,o}{e\,v},\\
- x &= \frac{2\,v}{21\,o^3}, 
- & g &= \frac{8\,r}{27\,o^2}, 
- & l &= \frac{11\,o}{e^2\,v}, 
- & a &= -\frac{3}{80\,e^2\,r\,v}.
-\end{aligned}
-\]
-\section*{Concrete Example}
-We choose
-\[
- o = 1,\quad
- e = 1,\quad
- r = 1,\quad
- v = 1.
-\]
-Then
-\[
-\begin{aligned}
- z &= 0,\\
- o &= 1, & e &= 1, & r &= 1, & v &= 1,\\
- n &= 1, & t &= 10, & w &= \frac{1}{5}, & h &= \frac{3}{10},\\
- i &= 9, & f &= \frac{5}{9}, & u &= \frac{36}{5}, & s &= 7,\\
- x &= \frac{2}{21}, & g &= \frac{8}{27}, & l &= 11, & a &= -\frac{3}{80}.
-\end{aligned}
-\]
+\subsection{Deriving Dependent Variables}
+We proceed sequentially, expressing each remaining variable in terms of the free parameters or previously derived variables.
 
-\section*{Why not Twelve?}
+\begin{enumerate}
+    \item \textbf{Deriving n:} From \eqref{eq:one}, $o \cdot n \cdot e = 1 \implies n = \frac{1}{oe}$.
+    \item \textbf{Deriving t:} From \eqref{eq:ten}, $t \cdot e \cdot n = 10$. Substituting $n = \frac{1}{oe}$, we get $t \cdot e \cdot (\frac{1}{oe}) = 10 \implies \frac{t}{o} = 10 \implies t = 10o$.
+    \item \textbf{Deriving w:} From \eqref{eq:two}, $t \cdot w \cdot o = 2$. Substituting $t = 10o$, we get $(10o) \cdot w \cdot o = 2 \implies 10o^2 w = 2 \implies w = \frac{2}{10o^2} = \frac{1}{5o^2}$.
+    \item \textbf{Deriving h:} From \eqref{eq:three}, $t \cdot h \cdot r \cdot e^2 = 3$. Substituting $t = 10o$, we get $(10o) \cdot h \cdot r \cdot e^2 = 3 \implies h = \frac{3}{10ore^2}$.
+    \item \textbf{Deriving i:} From \eqref{eq:nine}, $n \cdot i \cdot n \cdot e = 9$. Substituting $n = \frac{1}{oe}$, we get $(\frac{1}{oe}) \cdot i \cdot (\frac{1}{oe}) \cdot e = 9 \implies \frac{i}{o^2e} = 9 \implies i = 9o^2e$.
+    \item \textbf{Deriving f:} From \eqref{eq:five}, $f \cdot i \cdot v \cdot e = 5$. Substituting $i = 9o^2e$, we get $f \cdot (9o^2e) \cdot v \cdot e = 5 \implies 9o^2e^2v f = 5 \implies f = \frac{5}{9o^2e^2v}$.
+    \item \textbf{Deriving u:} From \eqref{eq:four}, $f \cdot o \cdot u \cdot r = 4$. Substituting $f = \frac{5}{9o^2e^2v}$, we get $(\frac{5}{9o^2e^2v}) \cdot o \cdot u \cdot r = 4 \implies \frac{5or}{9o^2e^2v} u = 4 \implies u = \frac{4 \cdot 9o^2e^2v}{5or} = \frac{36oe^2v}{5r}$.
+    \item \textbf{Deriving s:} From \eqref{eq:seven}, $s \cdot e \cdot v \cdot e \cdot n = 7$. Substituting $n = \frac{1}{oe}$, we get $s \cdot e^2 \cdot v \cdot (\frac{1}{oe}) = 7 \implies \frac{sev}{o} = 7 \implies s = \frac{7o}{ev}$.
+    \item \textbf{Deriving x:} From \eqref{eq:six}, $s \cdot i \cdot x = 6$. Substituting $s = \frac{7o}{ev}$ and $i = 9o^2e$, we get $(\frac{7o}{ev}) \cdot (9o^2e) \cdot x = 6 \implies \frac{63o^3}{v} x = 6 \implies x = \frac{6v}{63o^3} = \frac{2v}{21o^3}$.
+    \item \textbf{Deriving g:} From \eqref{eq:eight}, $e \cdot i \cdot g \cdot h \cdot t = 8$. Substituting $i=9o^2e$, $h=\frac{3}{10ore^2}$, $t=10o$, we get $e \cdot (9o^2e) \cdot g \cdot (\frac{3}{10ore^2}) \cdot (10o) = 8 \implies (9o^2e^2) \cdot g \cdot (\frac{3}{re^2}) = 8 \implies \frac{27o^2}{r} g = 8 \implies g = \frac{8r}{27o^2}$.
+    \item \textbf{Deriving l:} From \eqref{eq:eleven}, $e \cdot l \cdot e \cdot v \cdot e \cdot n = 11$. Substituting $n = \frac{1}{oe}$, we get $e^3 \cdot l \cdot v \cdot (\frac{1}{oe}) = 11 \implies \frac{e^2lv}{o} = 11 \implies l = \frac{11o}{e^2v}$.
+    \item \textbf{Deriving a:} From \eqref{eq:negative}, $n \cdot e \cdot g \cdot a \cdot t \cdot i \cdot v \cdot e = -1$. Substituting known values: $n=\frac{1}{oe}$, $g=\frac{8r}{27o^2}$, $t=10o$, $i=9o^2e$, we get $(\frac{1}{oe}) \cdot e \cdot (\frac{8r}{27o^2}) \cdot a \cdot (10o) \cdot (9o^2e) \cdot v \cdot e = -1$. Simplifying: $(\frac{1}{o}) \cdot (\frac{8r}{27o^2}) \cdot a \cdot (10o) \cdot (9o^2e^2v) = -1$. Further simplification: $(\frac{8r}{27o^3}) \cdot a \cdot (90o^3e^2v) = -1$. Combining terms: $\frac{8r \cdot 90 \cdot o^3 e^2 v}{27 o^3} a = -1 \implies \frac{720 r e^2 v}{27} a = -1 \implies \frac{80 r e^2 v}{3} a = -1 \implies a = -\frac{3}{80re^2v}$.
+\end{enumerate}
 
-\newtheorem*{theorem}{Theorem}
+This completes the derivation of all dependent variables in terms of the free parameters $\{o, e, r, v\}$.
+
+\section{Results}
+\label{sec:results}
+\subsection{General Solution}
+The general solution for the LegibleMath system (Problem 1), expressing each letter constant in terms of the non-zero free parameters $o, e, r, v$, is:
+\[
+\begin{alignedat}{3}
+ z &= 0 & \qquad n &= \dfrac{1}{oe}      & \qquad t &= 10o \\[\jot] % [\jot] adds a bit of vertical space
+ w &= \dfrac{1}{5o^2} & \qquad h &= \dfrac{3}{10ore^2} & \qquad i &= 9o^2e \\[\jot]
+ f &= \dfrac{5}{9o^2e^2v} & \qquad u &= \dfrac{36oe^2v}{5r} & \qquad s &= \dfrac{7o}{ev} \\[\jot]
+ x &= \dfrac{2v}{21o^3} & \qquad g &= \dfrac{8r}{27o^2} & \qquad l &= \dfrac{11o}{e^2v} \\[\jot]
+ a &= -\dfrac{3}{80re^2v} & & & & % Placeholders for empty columns
+\end{alignedat}
+\]
+The free parameters $o, e, r, v$ can be any non-zero real numbers.
+
+\subsection{Concrete Instantiation}
+For practical implementation and verification, we can instantiate the general solution by choosing specific values for the free parameters. A simple choice is setting all free parameters to unity:
+\[ o = 1, \quad e = 1, \quad r = 1, \quad v = 1. \]
+Substituting these values into the general solution yields the following concrete set of constants:
+\[
+\begin{alignedat}{3}
+ z &= 0 & \qquad o &= 1 & \qquad e &= 1 \\[\jot]
+ r &= 1 & \qquad v &= 1 & \qquad n &= 1 \\[\jot]
+ t &= 10 & \qquad w &= \dfrac{1}{5} & \qquad h &= \dfrac{3}{10} \\[\jot]
+ i &= 9 & \qquad f &= \dfrac{5}{9} & \qquad u &= \dfrac{36}{5} \\[\jot]
+ s &= 7 & \qquad x &= \dfrac{2}{21} & \qquad g &= \dfrac{8}{27} \\[\jot]
+ l &= 11 & \qquad a &= -\dfrac{3}{80} & & % Placeholder for last column
+\end{alignedat}
+\]
+This specific set of rational constants satisfies all equations \eqref{eq:zero} through \eqref{eq:negative}.
+
+\section{Analysis and System Limitations}
+\label{sec:analysis}
+
+The derived solution provides a consistent mathematical basis for LegibleMath within its defined scope (integers -11 to 11). However, the structure of the system imposes inherent limitations, most notably concerning its extensibility.
+
+\subsection{Impossibility Proof for Extension to Twelve}
+A natural question is whether the LegibleMath system can be extended to include the number twelve, i.e., can we satisfy the additional constraint $t \cdot w \cdot e \cdot l \cdot v \cdot e = 12$ simultaneously with equations \eqref{eq:zero}-\eqref{eq:negative}?
 
 \begin{theorem}
-The system of word-product equations admits solutions in real numbers, but it is \emph{impossible} to extend it by
-\[
-t\,w\,e\,l\,v\,e = 12.
-\]
+\label{thm:twelve}
+Any solution $(\phi(l))_{l \in L}$ satisfying the LegibleMath system equations \eqref{eq:zero} through \eqref{eq:negative} necessarily yields $\phi(t)\phi(w)\phi(e)\phi(l)\phi(v)\phi(e) = 22$. Consequently, it is impossible to extend the system to include the constraint $t \cdot w \cdot e \cdot l \cdot v \cdot e = 12$.
 \end{theorem}
 
 \begin{proof}
-From the equations
-\[
-o\,n\,e = 1
-\quad\text{and}\quad
-z\,e\,r\,o = 0,
-\]
-since \(o,n,e\neq0\) (else \(o\,n\,e\) could not be 1), we must have
-\[
-z = 0,
-\quad
-o = n = e = 1.
-\]
-Next, from
-\[
-t\,e\,n = 10
-\quad\Longrightarrow\quad
-t \cdot 1 \cdot 1 = 10
-\quad\Longrightarrow\quad
-t = 10,
-\]
-and from
-\[
-t\,w\,o = 2
-\quad\Longrightarrow\quad
-10 \,w \cdot 1 = 2
-\quad\Longrightarrow\quad
-w = \frac{1}{5}.
-\]
-Likewise, from
-\[
-e\,l\,e\,v\,e\,n = 11
-\quad\Longrightarrow\quad
-1 \cdot l \cdot 1 \cdot v \cdot 1 \cdot 1 = 11
-\quad\Longrightarrow\quad
-l\,v = 11.
-\]
-Hence the would-be “twelve” product is
-\[
-t \, w \, e \, l \, v \, e
-= 
-\bigl(t\bigr)\bigl(w\bigr)\bigl(e\bigr)\bigl(l\,v\bigr)\bigl(e\bigr)
-=
-10 \times \frac15 \times 1 \times 11 \times 1
-=
-2 \times 11
-=
-22.
-\]
-This shows that in any solution of the original system one necessarily has
-\[
-t\,w\,e\,l\,v\,e = 22 \neq 12.
-\]
-Therefore the equation \(t\,w\,e\,l\,v\,e = 12\) cannot be satisfied simultaneously
-with the first eleven equations.
+Let $(\phi(l))_{l \in L}$ be a valid solution satisfying equations \eqref{eq:zero} through \eqref{eq:negative}. From the derivation in Section \ref{sec:derivation} (or by direct substitution using the general solution), we have established specific relationships between the constants. Consider the expression for "twelve": $t \cdot w \cdot e \cdot l \cdot v \cdot e$.
+We can group terms based on known sub-products or derived values:
+\begin{itemize}
+    \item From equation \eqref{eq:two}, we know $t \cdot w \cdot o = 2$. Since $o \neq 0$, this implies $t \cdot w = 2/o$.
+    \item From equation \eqref{eq:eleven}, we know $e \cdot l \cdot e \cdot v \cdot e \cdot n = 11$.
+\end{itemize}
+Let's use the derived values from the general solution (Section \ref{sec:results}):
+\begin{itemize}
+    \item $t = 10o$
+    \item $w = \frac{1}{5o^2}$
+    \item $l = \frac{11o}{e^2v}$
+\end{itemize}
+Now, substitute these into the product for "twelve":
+\begin{align*}
+t \cdot w \cdot e \cdot l \cdot v \cdot e &= (t \cdot w) \cdot e^2 \cdot (l \cdot v) \\
+&= \left( (10o) \cdot \left(\frac{1}{5o^2}\right) \right) \cdot e^2 \cdot \left( \left(\frac{11o}{e^2v}\right) \cdot v \right) \\
+&= \left( \frac{10o}{5o^2} \right) \cdot e^2 \cdot \left( \frac{11o v}{e^2 v} \right) \\
+&= \left( \frac{2}{o} \right) \cdot e^2 \cdot \left( \frac{11o}{e^2} \right) \\
+&= \frac{2 \cdot e^2 \cdot 11 \cdot o}{o \cdot e^2} \\
+&= 2 \cdot 11 \\
+&= 22
+\end{align*}
+The calculation shows that for \emph{any} valid assignment of constants satisfying the original system (regardless of the choice of free parameters $o, e, r, v$, provided they are non-zero), the product corresponding to the spelling \emph{twelve} inevitably evaluates to 22.
+
+Since $22 \neq 12$, the equation $t \cdot w \cdot e \cdot l \cdot v \cdot e = 12$ is incompatible with the system defined by equations \eqref{eq:zero} through \eqref{eq:negative}. Therefore, the LegibleMath system cannot be extended to include twelve.
 \end{proof}
+
+\subsection{Other Considerations}
+\begin{itemize}
+    \item \textbf{Dependence on Language Spelling:} The system is inherently tied to the specific letter sequences of number words in a chosen language. It is not readily adaptable to other languages without a complete reformulation and resolution of the corresponding system of equations.
+
+    \item \textbf{Choice of English and System Scope:} While the methodology could be applied to other languages, and computational methods confirm solvability for alternatives like French (e.g., for spellings \emph{negatif}, \emph{zero} through \emph{dix}) \cite{raffy_french}, English was selected for the LegibleMath implementation. This choice prioritizes a language prevalent in smart contract development and, crucially, leverages an orthography whose resulting system of equations permits a consistent solution across the integer range [-11, 11], as demonstrated. The scope achievable may differ significantly for other languages.
+
+    \item \textbf{Rational Constants:} The derived constants for the English system are rational numbers, not necessarily integers. While the LegibleMath Solidity library manages this internally using fractional representations, it's a point of note regarding the mathematical nature of the solution.
+
+    \item \textbf{Magnitude of Constants:} Depending on the choice of free parameters, individual constants can become very large or very small, potentially leading to precision issues in fixed-point implementations if not handled carefully (though the reference library uses rational numbers).
+\end{itemize}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper presented the formal mathematical underpinning of the LegibleMath system, a novel approach to representing numerical values in Solidity smart contracts through phonetically-inspired letter constant products. We successfully formulated and solved the system of non-linear equations derived from the English spellings of integers in the range [-11, 11]. The general solution, dependent on four non-zero free parameters, was derived, and a concrete instantiation using rational constants was provided.
+
+A key finding is the inherent limitation of the system's scope. We rigorously proved that the structure imposed by the equations for 0-11 and \emph{negative} makes it mathematically impossible to consistently incorporate the number twelve, as the product $t \cdot w \cdot e \cdot l \cdot v \cdot e$ necessarily evaluates to 22 in any valid solution.
+
+While LegibleMath offers a unique perspective on code readability within its constrained domain, its practical applicability is bound by this mathematical limitation and its dependence on English orthography. This work provides the necessary foundational validation for the LegibleMath library and clarifies its operational boundaries. Future investigations might explore similar systems based on different linguistic or symbolic representations.
+
+% \newpage
+ \begin{thebibliography}{9}
+    \bibitem{solidity_docs}
+    Solidity Team. (2024). \textit{Solidity Documentation}. Accessed April 2025. \\
+    \url{https://docs.soliditylang.org/}
+
+    \bibitem{safemath}
+    OpenZeppelin. (2017). \textit{SafeMath Library}. Accessed April 2025. \\
+    \url{https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/math/SafeMath.sol}
+
+	\bibitem{raffy_french}
+    Dr. Raffy.eth [@adraffy]. (2025). \textit{here's a french (up to 10)} \\
+    \url{https://x.com/adraffy/status/1913043428151275766}
+ \end{thebibliography}
 
 \end{document}
